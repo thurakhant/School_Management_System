@@ -1,10 +1,20 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:school_management/module/widget.dart';
-import 'package:school_management/screen/dashboard.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:school_management/Bloc/bloc_state.dart';
+import 'package:school_management/Bloc/user_bloc.dart';
+import 'package:provider/provider.dart';
+import 'module/widget.dart';
+import 'screen/dashboard.dart';
 import 'module/extension.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MultiBlocProvider(
+    providers: [
+      BlocProvider<UserBloc>(create: (_) => UserBloc()),
+    ],
+    child: MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -19,26 +29,32 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: const MyHomePage(),
+      home: BlocBuilder<UserBloc, BlocState>(
+        builder: (context, state) {
+          if (state is Aunthenticated) return const Dashboard();
+          return Login(state: state);
+        },
+      ),
     );
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({Key? key}) : super(key: key);
+class Login extends StatelessWidget {
+  final BlocState state;
+  const Login({
+    required this.state,
+    Key? key,
+  }) : super(key: key);
 
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
+    TextEditingController _mobile = TextEditingController();
+    TextEditingController _pass = TextEditingController();
     return Scaffold(
       appBar: AppBar(),
       body: SafeArea(
         child: Container(
-          width: context.width * 0.3 < 350 ? 400 : context.width * 0.3,
+          width: context.width * 0.3 < 350 ? 350 : context.width * 0.3,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
@@ -46,13 +62,8 @@ class _MyHomePageState extends State<MyHomePage> {
                   .toLabel(bold: true, color: Colors.grey, fontsize: 22)
                   .padding9
                   .margin9,
-              const Edit(
-                hint: 'Username',
-              ).margin9,
-              const Edit(
-                hint: 'Password',
-                password: true,
-              ).margin9,
+              Edit(hint: 'Username', controller: _mobile).margin9,
+              Edit(hint: 'Password', password: true, controller: _pass).margin9,
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -60,17 +71,33 @@ class _MyHomePageState extends State<MyHomePage> {
                     title: 'Register',
                     onTap: () => print('clicked'),
                     color: Colors.green,
-                    icon: const Icon(Icons.edit,size: 15,),
+                    icon: const Icon(Icons.edit, size: 15),
                   ).margin9,
+                  state is Loading
+                      ? const CupertinoActivityIndicator()
+                      : Container(),
                   Button(
                     title: 'Login',
-                    onTap: () => context.showForm(const Dashboard()),
+                    onTap: () => context
+                        .read<UserBloc>()
+                        .authenticate(_mobile.text, _pass.text),
                     color: Colors.blue,
-                    icon: const Icon(Icons.vpn_key),
+                    icon: const Icon(Icons.vpn_key, size: 15),
                   ).margin9,
-                  
                 ],
               ),
+              state is Failed
+                  ? Container(
+                      margin: const EdgeInsets.all(25),
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(12)),
+                      child: (state as Failed).exception.toString().toLabel(
+                            color: Colors.white,
+                            bold: true,
+                          ))
+                  : Container(),
             ],
           ),
         ).padding9.margin9.card.center,

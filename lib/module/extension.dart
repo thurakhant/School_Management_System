@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:school_management/module/widget.dart';
+import 'widget.dart';
 
 extension ContextExtension on BuildContext {
   double get width => MediaQuery.of(this).size.width;
