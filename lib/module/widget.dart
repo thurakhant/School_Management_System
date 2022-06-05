@@ -109,11 +109,13 @@ class Edit extends StatelessWidget {
   final Function(String)? onChange;
   final bool autofocus;
   final bool password;
+  final bool notempty;
   final TextEditingController? controller;
   const Edit(
       {required this.hint,
       this.onChange,
       this.controller,
+      this.notempty = false,
       this.autofocus = false,
       this.password = false,
       Key? key})
@@ -132,6 +134,11 @@ class Edit extends StatelessWidget {
       obscureText: password,
       controller: controller,
       onChanged: onChange,
+      validator: (val) {
+        if ((val ?? '').isEmpty && notempty) {
+          return "Cannot Be Empty";
+        }
+      },
     );
   }
 }

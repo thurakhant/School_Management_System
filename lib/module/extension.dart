@@ -16,7 +16,7 @@ extension StringExtension on String {
     bool? bold,
   }) =>
       Label(
-        this,
+        replaceAll("Exception: ", ""),
         bold: bold = false,
         fontsize: fontsize,
         color: color,

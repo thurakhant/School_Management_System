@@ -9,18 +9,18 @@ import 'screen/dashboard.dart';
 import 'module/extension.dart';
 
 void main() {
-  runApp(MultiBlocProvider(
-    providers: [
-      BlocProvider<UserBloc>(create: (_) => UserBloc()),
-    ],
-    child: MyApp(),
-  ));
+  runApp(
+    MultiBlocProvider(
+      providers: [
+        BlocProvider<UserBloc>(create: (_) => UserBloc()),
+      ],
+      child: MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({Key? key}) : super(key: key);
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -50,55 +50,75 @@ class Login extends StatelessWidget {
   Widget build(BuildContext context) {
     TextEditingController _mobile = TextEditingController();
     TextEditingController _pass = TextEditingController();
+    final _formKey = GlobalKey<FormState>();
     return Scaffold(
       appBar: AppBar(),
       body: SafeArea(
-        child: Container(
+        child: SizedBox(
           width: context.width * 0.3 < 350 ? 350 : context.width * 0.3,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              'Welcome To Bliss School'
-                  .toLabel(bold: true, color: Colors.grey, fontsize: 22)
-                  .padding9
-                  .margin9,
-              Edit(hint: 'Username', controller: _mobile).margin9,
-              Edit(hint: 'Password', password: true, controller: _pass).margin9,
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Button(
-                    title: 'Register',
-                    onTap: () => print('clicked'),
-                    color: Colors.green,
-                    icon: const Icon(Icons.edit, size: 15),
-                  ).margin9,
-                  state is Loading
-                      ? const CupertinoActivityIndicator()
-                      : Container(),
-                  Button(
-                    title: 'Login',
-                    onTap: () => context
-                        .read<UserBloc>()
-                        .authenticate(_mobile.text, _pass.text),
-                    color: Colors.blue,
-                    icon: const Icon(Icons.vpn_key, size: 15),
-                  ).margin9,
-                ],
-              ),
-              state is Failed
-                  ? Container(
-                      margin: const EdgeInsets.all(25),
-                      padding: const EdgeInsets.all(12),
-                      decoration: BoxDecoration(
-                          color: Colors.red,
-                          borderRadius: BorderRadius.circular(12)),
-                      child: (state as Failed).exception.toString().toLabel(
-                            color: Colors.white,
-                            bold: true,
-                          ))
-                  : Container(),
-            ],
+          child: Form(
+            key: _formKey,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                'Welcome To Bliss School'
+                    .toLabel(bold: true, color: Colors.grey, fontsize: 22)
+                    .padding9
+                    .margin9,
+                Edit(
+                  hint: 'Username',
+                  controller: _mobile,
+                  notempty: true,
+                ).margin9,
+                Edit(
+                        hint: 'Password',
+                        password: true,
+                        controller: _pass,
+                        notempty: true)
+                    .margin9,
+                AbsorbPointer(
+                  absorbing: state is Loading,
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Button(
+                        title: 'Register',
+                        onTap: () => print('clicked'),
+                        color: Colors.green,
+                        icon: const Icon(Icons.edit, size: 15),
+                      ).margin9,
+                      state is Loading
+                          ? const CupertinoActivityIndicator()
+                          : Container(),
+                      Button(
+                        title: 'Login',
+                        onTap: () {
+                          if (_formKey.currentState!.validate()) {
+                            return context
+                                .read<UserBloc>()
+                                .authenticate(_mobile.text, _pass.text);
+                          }
+                        },
+                        color: Colors.blue,
+                        icon: const Icon(Icons.vpn_key, size: 15),
+                      ).margin9,
+                    ],
+                  ),
+                ),
+                state is Failed
+                    ? Container(
+                        margin: const EdgeInsets.all(25),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(12)),
+                        child: (state as Failed).exception.toString().toLabel(
+                              color: Colors.white,
+                              bold: true,
+                            ))
+                    : Container(),
+              ],
+            ),
           ),
         ).padding9.margin9.card.center,
       ),

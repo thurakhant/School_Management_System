@@ -10,8 +10,8 @@ class UserBloc extends Cubit<BlocState> {
 
   void authenticate(String mobile, String pass) async {
     if (state is Loading) return;
-    emit(Loading());
     try {
+      emit(Loading());
       _user = await UserRepo.authenticate(mobile, pass);
       emit(Aunthenticated(_user!));
     } catch (e) {
